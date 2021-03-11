@@ -1,0 +1,407 @@
+//      --a--
+//    |       |
+//    f       b
+//    |       |
+//      --g--
+//    |       |
+//    e       c
+//    |       |
+//      --d--
+function easy_7seg_init()
+{
+  set G_test_angle 0
+  set G_test_number 0
+  set G_counter 0
+  set 7seg_show_0 "1!1!1!1!1!1!0"
+  set 7seg_show_1 "0!1!1!0!0!0!0"
+  set 7seg_show_2 "1!1!0!1!1!0!1"
+  set 7seg_show_3 "1!1!1!1!0!0!1"
+  set 7seg_show_4 "0!1!1!0!0!1!1"
+  set 7seg_show_5 "1!0!1!1!0!1!1"
+  set 7seg_show_6 "1!0!1!1!1!1!1"
+  set 7seg_show_7 "1!1!1!0!0!0!0"
+  set 7seg_show_8 "1!1!1!1!1!1!1"
+  set 7seg_show_9 "1!1!1!1!0!1!1"
+  sp_sc_func_exec spf_sc_list_add_func _sp_sv_on_map_begin "7seg_map_begin"
+}
+function 7seg_map_begin()
+{
+  sf_sv_effect_register "environ/tripbeam"
+  set G_seg_id 1
+  set G_thickness 5
+  sp_sc_cvar_find ~tmp 7seg_?_on_*
+  set ~counter 1
+  sp_sc_flow_while number cvar ~counter <= cvar ~tmp_0
+  {
+    sp_sc_cvar_copy ~on ~tmp_$~counter
+    set $~on 0
+    add ~counter 1
+  }
+  G_seg_id
+}
+function 7seg_show_number_1(~num,~id)
+{
+  sp_sc_cvar_copy ~tmp 7seg_show_$~num
+  sp_sc_cvar_split ~1 "!" ~tmp
+  sp_sc_func_exec 7seg_show_number_2 $~1_1 $~1_2 $~1_3 $~1_4 $~1_5 $~1_6 $~1_7 $~id
+}
+function 7seg_show_number_2(*)
+{
+  set ~a #~1
+  set ~b #~2
+  set ~c #~3
+  set ~d #~4
+  set ~e #~5
+  set ~f #~6
+  set ~g #~7
+  set ~id #~8
+
+  sp_sc_flow_if number cvar ~a == val 1
+  {
+    set 7seg_a_on_$~id 1
+  }
+  else
+  {
+    set 7seg_a_on_$~id 0
+  }
+  sp_sc_flow_if number cvar ~b == val 1
+  {
+    set 7seg_b_on_$~id 1
+  }
+  else
+  {
+    set 7seg_b_on_$~id 0
+  }
+  sp_sc_flow_if number cvar ~c == val 1
+  {
+    set 7seg_c_on_$~id 1
+  }
+  else
+  {
+    set 7seg_c_on_$~id 0
+  }
+  sp_sc_flow_if number cvar ~d == val 1
+  {
+    set 7seg_d_on_$~id 1
+  }
+  else
+  {
+    set 7seg_d_on_$~id 0
+  }
+  sp_sc_flow_if number cvar ~e == val 1
+  {
+    set 7seg_e_on_$~id 1
+  }
+  else
+  {
+    set 7seg_e_on_$~id 0
+  }
+  sp_sc_flow_if number cvar ~f == val 1
+  {
+    set 7seg_f_on_$~id 1
+  }
+  else
+  {
+    set 7seg_f_on_$~id 0
+  }
+  sp_sc_flow_if number cvar ~g == val 1
+  {
+    set 7seg_g_on_$~id 1
+  }
+  else
+  {
+    set 7seg_g_on_$~id 0
+  }
+
+}
+
+function draw_lasers()
+{
+  set ~counter 1
+  sp_sc_flow_while number cvar ~counter < cvar G_seg_id
+  {
+    sp_sc_flow_if number cvar 7seg_a_on_$~counter == val 1
+    { 
+      sf_sv_effect_endpos 7seg_ae_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_as_$~counter
+    }
+    sp_sc_flow_if number cvar 7seg_b_on_$~counter == val 1
+    {
+      sf_sv_effect_endpos 7seg_be_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_bs_$~counter
+    }
+    sp_sc_flow_if number cvar 7seg_c_on_$~counter == val 1
+    {
+      sf_sv_effect_endpos 7seg_ce_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_cs_$~counter
+    }
+    sp_sc_flow_if number cvar 7seg_d_on_$~counter == val 1
+    {
+      sf_sv_effect_endpos 7seg_de_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_ds_$~counter
+    }
+    sp_sc_flow_if number cvar 7seg_e_on_$~counter == val 1
+    {
+      sf_sv_effect_endpos 7seg_ee_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_es_$~counter
+    }
+    sp_sc_flow_if number cvar 7seg_f_on_$~counter == val 1
+    {
+      sf_sv_effect_endpos 7seg_fe_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_fs_$~counter
+    }
+    sp_sc_flow_if number cvar 7seg_g_on_$~counter == val 1
+    {
+      sf_sv_effect_endpos 7seg_ge_$~counter
+      sf_sv_effect_start "environ/tripbeam" 7seg_gs_$~counter
+    }
+    add ~counter 1
+  }
+  sset ~cmd sp_sc_func_exec draw_lasers
+  sp_sc_timer 100 #~cmd 
+}
+
+//7 Segment display
+//      --a--
+//    |       |
+//    f       b
+//    |       |
+//      --g--
+//    |       |
+//    e       c
+//    |       |
+//      --d--
+function .try(*)
+{
+  sp_sc_func_exec draw_lasers
+  sp_sc_func_exec make_7seg -412 335 178 90 50
+}
+
+function make_7seg(~x,~y,~z,~ang,~size)
+{
+  echo "make ***********************s************"
+  //we have position of center of D
+  //x1 = x + cos(ang) * distance;
+  //y1 = y + sin(ang) * distance;
+  // start-d/2-[origin]-d/2-end
+
+  set ~d/2 $~size
+  sp_sc_cvar_math_div ~d/2 2
+  sp_sc_flow_if number cvar ~ang > val 0
+  {
+    //first position
+    set ~x1 $~x
+    set ~cosA $~ang
+    sf_sv_math_cos ~cosA
+    sp_sc_cvar_math_mul ~cosA $~d/2
+    add ~x1 $~cosA
+
+    set ~y1 $~y
+    set ~sinA $~ang
+    sf_sv_math_sin ~sinA
+    sp_sc_cvar_math_mul ~sinA $~d/2
+    add ~y1 $~sinA
+
+    sf_sv_vector_set 7seg_ds_$G_seg_id $~x1 $~y1 $~z
+    //second
+    set ~tmp $~ang
+    add ~tmp 180
+    set ~x1 $~x
+    set ~cosA $~tmp
+    sf_sv_math_cos ~cosA
+    sp_sc_cvar_math_mul ~cosA $~d/2
+    add ~x1 $~cosA
+
+    set ~y1 $~y
+    set ~sinA $~tmp
+    sf_sv_math_sin ~sinA
+    sp_sc_cvar_math_mul ~sinA $~d/2
+    add ~y1 $~sinA
+
+    sf_sv_vector_set 7seg_de_$G_seg_id $~x1 $~y1 $~z
+
+    //Now we need e and c start
+    set ~ztmp $~z;add ~ztmp $G_thickness
+    add ~d/2 $G_thickness
+    //e
+    set ~x1 $~x
+    set ~cosA $~ang
+    sf_sv_math_cos ~cosA
+    sp_sc_cvar_math_mul ~cosA $~d/2
+    add ~x1 $~cosA
+
+    set ~y1 $~y
+    set ~sinA $~ang
+    sf_sv_math_sin ~sinA
+    sp_sc_cvar_math_mul ~sinA $~d/2
+    add ~y1 $~sinA
+
+    sf_sv_vector_set 7seg_es_$G_seg_id $~x1 $~y1 $~ztmp
+    //second
+    set ~tmp $~ang
+    add ~tmp 180
+    set ~x1 $~x
+    set ~cosA $~tmp
+    sf_sv_math_cos ~cosA
+    sp_sc_cvar_math_mul ~cosA $~d/2
+    add ~x1 $~cosA
+
+    set ~y1 $~y
+    set ~sinA $~tmp
+    sf_sv_math_sin ~sinA
+    sp_sc_cvar_math_mul ~sinA $~d/2
+    add ~y1 $~sinA
+
+    sf_sv_vector_set 7seg_cs_$G_seg_id $~x1 $~y1 $~ztmp
+
+  }
+  else
+  {
+    set ~x1 $~x
+    set ~x2 $~x
+    //first
+    add ~x1 $~d/2
+    sf_sv_vector_set 7seg_ds_$G_seg_id  $~x1 $~y $~z
+    //second
+    add ~x2 -$~d/2
+    sf_sv_vector_set 7seg_de_$G_seg_id  $~x2 $~y $~z
+
+    //start of e and c
+    set ~ztmp $~z;add ~ztmp $G_thickness
+    add ~x1 $G_thickness
+    sf_sv_vector_set 7seg_es_$G_seg_id  $~x1 $~y $~ztmp
+
+    add ~x2 -$G_thickness
+    sf_sv_vector_set 7seg_cs_$G_seg_id  $~x2 $~y $~ztmp
+  }
+
+  //7 Segment display
+  //      --a--
+  //    |       |
+  //    f       b
+  //    |       |
+  //      --g--
+  //    |       |
+  //    e       c
+  //    |       |
+  //      --d--
+  //set the end of e and c first
+  sf_sv_vector_set ~addvector 0 0 $~size
+  sf_sv_vector_grow 7seg_ee_$G_seg_id 7seg_es_$G_seg_id 1 ~addvector
+  sf_sv_vector_grow 7seg_ce_$G_seg_id 7seg_cs_$G_seg_id 1 ~addvector
+
+  //g
+  set ~tmp_add $G_thickness
+  add ~tmp_add $G_thickness
+  add ~tmp_add $~size
+  sf_sv_vector_set ~addvector 0 0 $~tmp_add
+  sf_sv_vector_grow 7seg_gs_$G_seg_id 7seg_ds_$G_seg_id 1 ~addvector
+  sf_sv_vector_grow 7seg_ge_$G_seg_id 7seg_de_$G_seg_id 1 ~addvector
+
+  //a
+  sf_sv_vector_set ~addvector 0 0 $~tmp_add
+  sf_sv_vector_grow 7seg_as_$G_seg_id 7seg_gs_$G_seg_id 1 ~addvector
+  sf_sv_vector_grow 7seg_ae_$G_seg_id 7seg_ge_$G_seg_id 1 ~addvector
+
+  // f
+  set ~tmp_add $G_thickness
+  add ~tmp_add $G_thickness
+  sf_sv_vector_set ~addvector 0 0 $~tmp_add
+  sf_sv_vector_grow 7seg_fs_$G_seg_id 7seg_ee_$G_seg_id 1 ~addvector
+  sf_sv_vector_set ~addvector 0 0 $~size
+  sf_sv_vector_grow 7seg_fe_$G_seg_id 7seg_fs_$G_seg_id 1 ~addvector
+
+  //b
+  set ~tmp_add $G_thickness
+  add ~tmp_add $G_thickness
+  sf_sv_vector_set ~addvector 0 0 $~tmp_add
+  sf_sv_vector_grow 7seg_bs_$G_seg_id 7seg_ce_$G_seg_id 1 ~addvector
+  sf_sv_vector_set ~addvector 0 0 $~size
+  sf_sv_vector_grow 7seg_be_$G_seg_id 7seg_bs_$G_seg_id 1 ~addvector
+
+  set 7seg_a_on_$G_seg_id 1
+  set 7seg_b_on_$G_seg_id 1
+  set 7seg_c_on_$G_seg_id 1
+  set 7seg_d_on_$G_seg_id 1
+  set 7seg_e_on_$G_seg_id 1
+  set 7seg_f_on_$G_seg_id 1
+  set 7seg_g_on_$G_seg_id 1
+  add G_seg_id 1
+}
+
+function .sanity()
+{
+  sf_sv_vector_set ~start_1 -437 335 298
+  sf_sv_vector_set ~end_1 -387 335 298
+  set ~sanity 1
+  sf_sv_effect_endpos ~start_$~sanity
+  sf_sv_effect_start "environ/tripbeam" ~end_$~sanity
+}
+
+function final_test_1()
+{
+  set G_seg_id 1
+  sf_sv_player_pos ~org 0
+  add ~org_3 20
+  sp_sc_func_exec make_7seg $~org_1 $~org_2 $~org_3 $G_test_angle $G_test_size
+  sp_sc_func_exec 7seg_show_number_1 $G_test_number 1
+  sp_sc_flow_if number cvar G_test_size == val 130
+  {
+    set G_test_size 20 
+  }
+  else
+  {
+    add G_test_size 1
+  }
+  sp_sc_flow_if number cvar G_test_angle == val 359
+  {
+    set G_test_angle 0
+  }
+  else
+  {
+    add G_test_angle 1
+  }
+  sp_sc_flow_if number cvar G_test_number == val 10
+  {
+    set G_test_number 0
+  }
+  sp_sc_flow_if number cvar G_counter == val 5
+  {
+    sp_sc_func_exec 7seg_show_number_1 G_test_number 1
+    set G_counter 0
+    add G_test_number 1
+  }
+  else
+  {
+    add G_counter 1
+  }
+  sp_sc_timer 100 "sp_sc_func_exec final_test_1"
+}
+
+function draw_2_digits(~num,~x,~y,~z,~ang,~size)
+{
+  sp_sc_cvar_substr ~1 ~num 0 1
+  sp_sc_cvar_substr ~2 ~num 1 1
+  set ~space $~size
+  sp_sc_cvar_math_mul ~space 0.5
+  set ~segl $~x
+  set ~segr $~x
+  add ~segl $~space
+  add ~segl 10
+  add ~segr -$~space
+  add ~segr -10
+  echo "*********************"
+  sp_sc_cvar_list ~segl ~segr ~size ~ang ~1 ~2
+  sp_sc_func_exec make_7seg $~segl $~y $~z $~ang $~size
+  set ~id $G_seg_id
+  add ~id -1
+  sp_sc_func_exec 7seg_show_number_1 $~1 $~id
+  sset ~msg show number $~1 on id $~id
+  ~msg
+  sp_sc_func_exec make_7seg $~segr $~y $~z $~ang $~size
+  add ~id 1
+  sp_sc_func_exec 7seg_show_number_1 $~2 $~id
+  
+  sset ~msg show number $~2 on id $~id
+  ~msg
+}
