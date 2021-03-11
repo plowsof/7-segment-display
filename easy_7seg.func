@@ -179,7 +179,7 @@ function .try(*)
 
 function make_7seg(~x,~y,~z,~ang,~size)
 {
-  echo "make ***********************s************"
+  //echo "make ***********************s************"
   //we have position of center of D
   //x1 = x + cos(ang) * distance;
   //y1 = y + sin(ang) * distance;
@@ -361,13 +361,13 @@ function final_test_1()
   {
     add G_test_angle 1
   }
-  sp_sc_flow_if number cvar G_test_number == val 10
+  sp_sc_flow_if number cvar G_test_number == val 9
   {
     set G_test_number 0
   }
   sp_sc_flow_if number cvar G_counter == val 5
   {
-    sp_sc_func_exec 7seg_show_number_1 G_test_number 1
+    sp_sc_func_exec 7seg_show_number_1 $G_test_number 1
     set G_counter 0
     add G_test_number 1
   }
