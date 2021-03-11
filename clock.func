@@ -1,0 +1,274 @@
+function clock_init()
+{
+	//adding 0.1 to 90 = 90.099
+	echo "a clock"
+	sp_sc_func_exec spf_sc_list_add_func _sp_sv_on_map_begin "clock_map_begin"
+}
+
+function clock_map_begin()
+{
+	set G_clock_id 1
+	sf_sv_effect_register "environ/tripbeam"
+}
+function clock_testing()
+{
+	sp_sc_func_exec clock_create 482 486 136 0 200
+	set clock_on_1 1
+	sp_sc_func_exec clock_draw_lasers
+	sset ~cmd sp_sc_func_exec tick_tock_loop
+	sp_sc_timer 5000 #~cmd
+}
+function tick_tock_loop()
+{
+	sp_sc_func_exec clock_tick_tock 1
+	sset ~cmd  sp_sc_func_exec tick_tock_loop
+	sp_sc_timer 1000 #~cmd
+}
+function clock_create(~x,~y,~z,~ang,~size)
+{
+	set clock_ang_$G_clock_id $~ang
+	//-412 335 178
+	//Minute hand the largest (length: size)
+	sf_sv_vector_set clock_ms_$G_clock_id $~x $~y $~z
+	sf_sv_vector_set ~addvector 0 0 $~size
+	sf_sv_vector_grow clock_me_$G_clock_id clock_ms_$G_clock_id 1 ~addvector 
+	sf_sv_vector_copy clock_me_temp_$G_clock_id clock_me_$G_clock_id
+	set clock_md_$G_clock_id $~size
+	set clock_ma_$G_clock_id 90
+	//Second hand (length: size*0.9)
+	set ~tmp $~size
+	sp_sc_cvar_math_mul ~tmp 0.9
+	sf_sv_vector_set clock_ss_$G_clock_id $~x $~y $~z
+	sf_sv_vector_set ~addvector 0 0 $~tmp
+	sf_sv_vector_grow clock_se_$G_clock_id clock_ss_$G_clock_id 1 ~addvector
+	sf_sv_vector_copy clock_se_temp_$G_clock_id clock_se_$G_clock_id
+	set clock_sd_$G_clock_id $~tmp
+	set clock_sa_$G_clock_id 90
+	//Hour hand (length: size*0.8)
+	set ~tmp $~size
+	sp_sc_cvar_math_mul ~tmp 0.7
+	sf_sv_vector_set clock_hs_$G_clock_id $~x $~y $~z
+	sf_sv_vector_set ~addvector 0 0 $~tmp
+	sf_sv_vector_grow clock_he_$G_clock_id clock_hs_$G_clock_id 1 ~addvector
+	sf_sv_vector_copy clock_he_temp_$G_clock_id clock_he_$G_clock_id
+	set clock_hd_$G_clock_id $~tmp
+	set clock_ha_$G_clock_id 90
+
+	set clock_seconds_$G_clock_id 0
+
+	add G_clock_id 1
+
+	//function 7seg_show_number_1(~num,~id)
+	//sp_sc_func_exec draw_lasers
+  	//sp_sc_func_exec make_7seg -412 335 178 90 50
+  	//x1 = x + cos(ang) * distance;
+	//z1 = z + sin(ang) * distance;
+	sp_sc_func_exec draw_lasers
+	set ~7seg_dist $~size
+	sp_sc_cvar_math_mul ~7seg_dist 0.8
+	set ~counter 1
+	add ~ang 90
+	add ~ang 30
+	sp_sc_flow_while number cvar ~counter <= val 12
+	{
+		set ~cosA $~ang
+		sf_sv_math_cos ~cosA
+		sp_sc_cvar_math_mul ~cosA $~7seg_dist
+		add ~cosA $~x
+
+		set ~sinA $~ang
+		sf_sv_math_sin ~sinA
+		sp_sc_cvar_math_mul ~sinA $~7seg_dist
+		add ~sinA $~z
+		add ~sinA -5 //hardcoded 'thickness/gap in 7seg'
+		add ~sinA -30
+		sp_sc_flow_if number cvar ~counter > val 9
+		{
+			//10/11/12
+			sp_sc_func_exec draw_2_digits $~counter $~cosA $~y $~sinA 0 20
+			say lol
+		}
+		else
+		{
+			sp_sc_func_exec make_7seg $~cosA $~y $~sinA 0 20
+			sp_sc_func_exec 7seg_show_number_1 $~counter $~counter
+		}
+		
+		add ~ang 30
+		add ~counter 1
+	}
+}	
+
+function clock_tick_tock(~id)
+{
+	//move the second hand by 1 second
+	//set clock_ang_$G_clock_id $~ang
+	//x1 = x + cos(ang) * distance;
+	//z1 = z + sin(ang) * distance;
+	//minute hand moves 0.1 degree
+	//second hand moves 6 degrees
+	//hour hand moves 0.00083 degrees
+	//~?d = distance/length
+	add clock_seconds_$~id 1
+	sf_sv_vector_copy ~ms clock_ms_$~id
+	sp_sc_cvar_copy ~md clock_md_$~id
+	set ~md #~md
+	sf_sv_vector_copy ~hs clock_hs_$~id
+	sp_sc_cvar_copy ~hd clock_hd_$~id
+	set ~hd #~hd
+	sf_sv_vector_copy ~ss clock_ss_$~id
+	sp_sc_cvar_copy ~sd clock_sd_$~id
+	set ~sd #~sd
+	sp_sc_cvar_copy ~ang clock_ang_$~id
+	set ~ang $~ang
+	sp_sc_flow_if number cvar ~ang > val 0
+	{
+		//move in the x y plane
+		echo "not done yet lol"
+	}
+	//rotate in the x z plane
+	//x1 = x + cos(ang) * distance;
+	//z1 = z + sin(ang) * distance;
+	//Second hand x
+	sp_sc_cvar_copy ~angs clock_sa_$~id
+	set ~angs #~angs
+	add ~angs 6
+	sp_sc_flow_if number cvar ~angs == val 360
+	{
+		set ~angs 0
+	}
+	echo "second"
+	~angs
+	set clock_sa_$~id $~angs
+	set ~cosA $~angs
+    sf_sv_math_cos ~cosA
+    sp_sc_cvar_math_mul ~cosA $~sd
+    sf_sv_vector_set ~addvector $~cosA 0 0
+    sf_sv_vector_grow ~se ~ss 1 ~addvector
+    //Second hand z
+    set ~sinA $~angs
+    sf_sv_math_sin ~sinA
+    sp_sc_cvar_math_mul ~sinA $~sd
+    sf_sv_vector_set ~addvector 0 0 $~sinA
+    sf_sv_vector_grow ~se ~se 1 ~addvector
+
+	sf_sv_vector_copy clock_se_temp_$~id ~se
+	//*************
+	//* Hour hand *
+	//*************
+	sp_sc_flow_if number cvar clock_seconds_$~id == val 30
+	{
+		//rotate hour hand by 0.25 degrees
+		//hour hand x
+		sp_sc_cvar_copy ~angs clock_ha_$~id
+		set ~angs #~angs
+		add ~angs 0.25
+		echo "hour hand"
+		~angs
+		sp_sc_flow_if number cvar ~angs == val 360
+		{
+			set ~angs 0
+		}
+		set clock_ha_$~id $~angs
+		set ~cosA $~angs
+	    sf_sv_math_cos ~cosA
+	    sp_sc_cvar_math_mul ~cosA $~hd
+	    sf_sv_vector_set ~addvector $~cosA 0 0
+	    sf_sv_vector_grow ~he ~hs 1 ~addvector
+	    //hour hand z
+	    set ~sinA $~angs
+	    sf_sv_math_sin ~sinA
+	    sp_sc_cvar_math_mul ~sinA $~sd
+	    sf_sv_vector_set ~addvector 0 0 $~sinA
+	    sf_sv_vector_grow ~he ~he 1 ~addvector
+
+		sf_sv_vector_copy clock_he_temp_$~id ~he
+		set clock_seconds_$~id 0
+	}
+	//***************
+	//* minute hand *
+	//***************
+	//Second hand x
+	sp_sc_cvar_copy ~angs clock_ma_$~id
+	set ~int #~angs
+	sp_sc_cvar_math_mul ~int 10
+	add ~int 1
+	echo "minute"
+	sp_sc_flow_if number cvar ~int >= val 3600
+	{
+		set ~int 0
+	}
+	//sp_sc_cvar_math_div ~int 10
+	sp_sc_cvar_substr ~f ~int -1 1
+	~f
+	sp_sc_cvar_substr ~i ~int 0 -1
+	~i
+	sp_sc_cvar_sset ~int $~i "." $~f
+	~int
+	set clock_ma_$~id $~int
+	set ~angs $~int
+	set ~cosA $~angs
+    sf_sv_math_cos ~cosA
+    sp_sc_cvar_math_mul ~cosA $~md
+    sf_sv_vector_set ~addvector $~cosA 0 0
+    sf_sv_vector_grow ~me ~ms 1 ~addvector
+    //Second hand z
+    set ~sinA $~angs
+    sf_sv_math_sin ~sinA
+    sp_sc_cvar_math_mul ~sinA $~md
+    sf_sv_vector_set ~addvector 0 0 $~sinA
+    sf_sv_vector_grow ~me ~me 1 ~addvector
+
+	sf_sv_vector_copy clock_me_temp_$~id ~me
+
+	//sset ~cmd sp_sc_func_exec clock_tick_tock 1
+	//sp_sc_timer 1000 #~cmd
+}
+
+function clock_draw_lasers()
+{
+  set ~counter 1
+  sp_sc_flow_while number cvar ~counter <= cvar G_clock_id
+  {
+    sp_sc_flow_if number cvar clock_on_$~counter == val 1
+    { 
+      sf_sv_effect_endpos clock_he_temp_$~counter
+      sf_sv_effect_start "environ/tripbeam" clock_hs_$~counter
+      sf_sv_effect_endpos clock_me_temp_$~counter
+      sf_sv_effect_start "environ/tripbeam" clock_ms_$~counter
+      sf_sv_effect_endpos clock_se_temp_$~counter
+      sf_sv_effect_start "environ/tripbeam" clock_ss_$~counter
+    }
+    add ~counter 1
+  }
+  sset ~cmd sp_sc_func_exec clock_draw_lasers
+  sp_sc_timer 100 #~cmd 
+}
+
+function broken_add()
+{
+	set ~counter 1
+	set ~number 270
+	sp_sc_flow_while number cvar ~counter <= val 10
+	{
+		add ~number 0.1
+		~number
+		sp_sc_cvar_split ~dp "." ~number
+		sp_sc_cvar_list ~dp_*
+		sp_sc_flow_if number cvar ~dp_0 > val 1
+		{
+			//~dp_2
+			sp_sc_cvar_substr ~dst ~dp_2 0 1
+			//~dst
+			sp_sc_cvar_sset ~number $~dp_1 . $~dst
+			sset ~cmd "setting number to" $~number
+			echo #~cmd
+			//~number
+		}
+		//~number
+		add ~counter 1
+	}
+	echo "end"
+	~number
+}
+
